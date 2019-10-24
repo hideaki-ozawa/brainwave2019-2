@@ -7,7 +7,7 @@ void setup(){
   smooth();
   
   fires = new ArrayList<fire_ball>();
-  for ( int i = 0; i < 300; ++i ) {
+  for ( int i = 0; i < 1000; ++i ) {
     fires.add( new fire_ball() );
   }
 }
@@ -17,9 +17,11 @@ void draw(){
   background(0,0,0);
   frameRate(60);
   float evalue = random(20);
-  i = (i+1) % 300;
+  if(i < 1000){
+    i = i+1;
+  }
   for(int j = 0; j < i ; j ++){ 
-    fires.get(i).run();
+    fires.get(j).run();
   }
 
 }
@@ -32,20 +34,26 @@ class fire_ball {
   PVector pos;
 
   fire_ball() {
-    size = random(20,30);
-    col = color(255, 100, 0); //todo:random
-    pos = new PVector( 500 + random(20), 300);
+    size = random(5,10);
+    col = color(255, 120 + random(-20,20), 50); 
+    pos = new PVector( 500 + random(-10,10), 250);
+    //todo: 速度によって火の玉を制御する
   }
 
   void run() {
-    update();
-    display();
+    if(size > 0.001){
+      update();
+      display();
+    }
+    else{
+      initialized();
+    }
   }
 
   void update() {
     float temp;
 
-    temp = pos.x + random(-0.5, 0.5);
+    temp = pos.x + random(-1, 1);
     if ( 400 < temp && temp < 600) {
       pos.x = temp;
     }
@@ -54,16 +62,22 @@ class fire_ball {
     pos.y = temp;
     }
     
-    temp = size - random(0.2);
+    temp = size - random(0.07);
     if (temp > 0 ) {
     size = temp;
     }
+  }
+  
+  void initialized(){
+    size = random(5,10);
+    col = color(255, 120 + random(-20,20), 50);
+    pos = new PVector( 500 + random(-10,10), 250);
   }
 
   void display() {
     fill(col);
     noStroke();
-    ellipse( pos.x, pos.y, size, size);
+    ellipse( pos.x, pos.y, size, size + random(5));
   }
 }
     
