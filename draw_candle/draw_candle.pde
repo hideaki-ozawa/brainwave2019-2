@@ -1,4 +1,5 @@
 ArrayList<fire_ball> fires;
+PImage candle_image;
 int i = 0;
 
 
@@ -6,8 +7,10 @@ void setup(){
   size(1000,600);
   smooth();
   
+  candle_image = loadImage("candle.jpg");
+  
   fires = new ArrayList<fire_ball>();
-  for ( int i = 0; i < 300; ++i ) {
+  for ( int i = 0; i < 5000; ++i ) {
     fires.add( new fire_ball() );
   }
 }
@@ -17,9 +20,17 @@ void draw(){
   background(0,0,0);
   frameRate(60);
   float evalue = random(20);
-  i = (i+1) % 300;
-  for(int j = 0; j < i ; j ++){ 
-    fires.get(i).run();
+  
+  //candleの描画
+  image(candle_image, 400, 250, 200, 300);
+  
+  blendMode(ADD);
+  if(i < 5000){
+    i = i+1;
+  }
+  for(int j = 0; j < i ; j += 2){ 
+    fires.get(j).run();
+    fires.get(j+1).run();
   }
 
 }
@@ -28,24 +39,32 @@ void draw(){
 
 class fire_ball {
   float size;
-  color col;
+  color fire_color = color(255,100 +random(10), 50 +random(10));
   PVector pos;
+  PVector v;
+  
 
   fire_ball() {
-    size = random(20,30);
-    col = color(255, 100, 0); //todo:random
-    pos = new PVector( 500 + random(20), 300);
+    size = random(5,10); 
+    pos = new PVector( 500 + random(-10,10), 250);
+    v = new PVector(random(-0.4,0.4),random(-1,-0.2));
+    //todo: 速度によって火の玉を制御する
   }
 
   void run() {
-    update();
-    display();
+    if(size > 0.0001){
+      new_update();
+      display();
+    }
+    else{
+      initialized();
+    }
   }
 
   void update() {
     float temp;
 
-    temp = pos.x + random(-0.5, 0.5);
+    temp = pos.x + random(-1, 1);
     if ( 400 < temp && temp < 600) {
       pos.x = temp;
     }
@@ -54,16 +73,38 @@ class fire_ball {
     pos.y = temp;
     }
     
-    temp = size - random(0.2);
+    temp = size - random(0.02*abs(pos.x - 500)+0.03);
     if (temp > 0 ) {
     size = temp;
     }
   }
+  
+  void new_update(){
+    pos.add(v);
+    float temp;
+
+    v.x = v.x - random(0.0005*(pos.x-500));
+    
+    temp = v.y + random(-0.005,0.005);
+    if(temp < 250){
+      v.y = temp;
+    }
+    
+    temp = size - random(0.08);
+    if (temp > 0 ) {
+    size = temp;
+    }
+  }
+  void initialized(){
+    size = random(5,10);
+    pos = new PVector( 500 + random(-10,10), 250);
+    v = new PVector(random(-0.3,0.3),random(-1,-0.2));
+  }
 
   void display() {
-    fill(col);
+    fill(fire_color);
     noStroke();
-    ellipse( pos.x, pos.y, size, size);
+    ellipse( pos.x, pos.y, size, size + random(5));
   }
 }
     
