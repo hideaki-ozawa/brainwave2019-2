@@ -1,7 +1,7 @@
 ArrayList<fire_ball> fires;
 PImage candle_image;
 int i = 0;
-
+int evalue = 0;
 
 void setup(){
   size(1000,600);
@@ -19,7 +19,9 @@ void setup(){
 void draw(){
   background(0,0,0);
   frameRate(60);
-  float evalue = random(20);
+  
+  textSize(24);
+  text(str(evalue),20,20);
   
   //candleの描画
   image(candle_image, 400, 250, 200, 300);
@@ -42,13 +44,13 @@ class fire_ball {
   color fire_color = color(255,100 +random(10), 50 +random(10));
   PVector pos;
   PVector v;
-  
+  float T;
 
   fire_ball() {
-    size = random(5,10); 
+    size = random(6,10); 
     pos = new PVector( 500 + random(-10,10), 250);
-    v = new PVector(random(-0.4,0.4),random(-1,-0.2));
-    //todo: 速度によって火の玉を制御する
+    v = new PVector(random(-0.6,0.6),random(-1,-0.2));
+    //todo: vを周期Tで変化させる
   }
 
   void run() {
@@ -83,9 +85,9 @@ class fire_ball {
     pos.add(v);
     float temp;
 
-    v.x = v.x - random(0.0005*(pos.x-500));
+    v.x = v.x - random(0.0008*(pos.x-500));
     
-    temp = v.y + random(-0.005,0.005);
+    temp = v.y + random(-0.002,0.005);
     if(temp < 250){
       v.y = temp;
     }
@@ -96,7 +98,7 @@ class fire_ball {
     }
   }
   void initialized(){
-    size = random(5,10);
+    size = random(6,10);
     pos = new PVector( 500 + random(-10,10), 250);
     v = new PVector(random(-0.3,0.3),random(-1,-0.2));
   }
@@ -104,7 +106,13 @@ class fire_ball {
   void display() {
     fill(fire_color);
     noStroke();
-    ellipse( pos.x, pos.y, size, size + random(5));
+    ellipse( pos.x, pos.y, size, size + random(7));
   }
 }
     
+    
+void mousePressed() {
+  if(evalue < 7){
+    evalue += 1;
+  }
+}
