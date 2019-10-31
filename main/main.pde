@@ -1,6 +1,7 @@
 import oscP5.*;
 import netP5.*;
 
+
 ArrayList<fire_ball> fires;
 PImage candle_image;
 int i = 0;
