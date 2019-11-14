@@ -44,6 +44,8 @@ int katsu_display_time = 0;
 long katsu_start;
 int clear = 0;
 float clear_time = pow(10,50);
+boolean not_wave_read = true;
+float not_read_display = 0.5;
 
 //脳波の読み込みに必要な関数
 final int N_CHANNELS = 4;
@@ -113,21 +115,32 @@ void draw(){
   else if(state == 2){ nextState = title();}
   else if(state == 3){ nextState = countdown();}
   
-  if(state != nextState){ t_start = millis(); }// 状態が遷移するので、現在の状態になった時刻を更新する
+  // 状態が遷移するので、現在の状態になった時刻を更新する
+  if(state != nextState){ t_start = millis(); }
   state = nextState;
 }
 
 int fire(){
   
-    //脳波の読み込み、evalueを生成。
+  //脳波の読み込み、evalueを生成。
   beta_ave = (sum(value[0][0])+sum(value[0][1])+sum(value[0][2])+sum(value[0][3]))/(4*60); 
   gamma_ave = (sum(value[1][0])+sum(value[1][1])+sum(value[1][2])+sum(value[1][3]))/(4*60);
-  // β波とγ波の2秒間の値の平均
+  // それぞれβ波とγ波の2秒間の値の平均
   evalue = 400*(beta_ave+1.2*gamma_ave);
+  
+  //デバッグ用、発表のときには消し、上のevalueを有効にする
+  //if(mousePressed == true){
+  //  evalue += 0.5;
+  //}
+  //if(keyPressed == true){
+  //  evalue -= 0.5;
+  //}
+  
   
   image(candle_image, 400, 250, 200, 300);
   fill(255,255,255);
-  text("evalue:"+ nf(evalue,1,3),350,60);
+  textSize(10);
+  text("evalue:"+ nf(evalue,1,3),30,10);
   
   blendMode(ADD);//光を加算合成に
   if(i < 5000){
@@ -139,6 +152,8 @@ int fire(){
   }
   
   //喝
+  //evalueが3より大きく、遷移してから、または前回の喝から10秒以上経過しすると起こる
+  //90frame流れる。
   if(evalue > 3 && t > 10 && (millis()-katsu_start)/1000 > 10){
   song.rewind();
   song.play();
@@ -147,10 +162,12 @@ int fire(){
   }
   
   if(katsu_display_time > 0){
-  image(trans_katsu_img,200,200);
+  image(trans_katsu_img,300,100,400,300);
   katsu_display_time -= 1;
   }
   
+  //clear画面への遷移
+  //evalueが1より小さい状態を5秒保つとクリアする
   if(evalue < 1 && clear == 0){
     clear_time = millis();
     clear = 1;
@@ -164,11 +181,12 @@ int fire(){
     clear = 0;
     return 1; // endの画面へ
   }
+  
   return 0;
 }
 
 
-
+//todo: お疲れ様でしたの画面が質素過ぎる。
 int end(){
   drawText("お疲れさまでした",60,width/2,height/2,255,255);
       if(mousePressed == true){
@@ -178,21 +196,45 @@ int end(){
 }
 
 
-//todo:脳波を4ch全てから受け取ってることを確認
+
 int title(){
   image(bouzu_img,0,0);
-  drawRect(centerX,centerY,widthRec,heightRec,white,0,white);
-  drawText("押したら始まります",30,centerX,centerY,255,255);
-  if (mouseX > centerX-widthRec/2 && mouseX < centerX+widthRec/2 && mouseY > centerY-heightRec/2 && mouseY < centerY+heightRec/2) {
+  
+  beta_ave = (sum(value[0][0])+sum(value[0][1])+sum(value[0][2])+sum(value[0][3]))/(4*60); 
+  gamma_ave = (sum(value[1][0])+sum(value[1][1])+sum(value[1][2])+sum(value[1][3]))/(4*60);
+  // β波とγ波の2秒間の値の平均
+  evalue = 400*(beta_ave+1.2*gamma_ave);
+  
+  //デバッグ用発表のときには消し、上のevalueを有効にする
+  //if(mousePressed == true){
+  //  evalue += 0.5;
+  //}
+  //if(keyPressed == true){
+  //  evalue -= 0.5;
+  //}
+  
+  //脳波が読み取れていない時、表示する。
+  if(evalue > 0){
+    not_wave_read = false;
+  }
+  if(not_wave_read){
+    not_read_display = (not_read_display + 1) % 200;
+    drawText("脳波が正しく読み取れていません",30,centerX,centerY,255,2.5*abs(not_read_display-100));
+  }
+  else{
+    drawRect(centerX,centerY,widthRec,heightRec,white,0,white);
+    drawText("押したら始まります",30,centerX,centerY,255,255);
+    if (mouseX > centerX-widthRec/2 && mouseX < centerX+widthRec/2 && mouseY > centerY-heightRec/2 && mouseY < centerY+heightRec/2) {
        //overBox = true;
-    drawRect(centerX,centerY,widthRec,heightRec,white,177,white);
-    drawText("押したら始まります",30,centerX,centerY,0,255);
-    if(mouseX > centerX-widthRec/2 && mouseX < centerX+widthRec/2 && mouseY > centerY-heightRec/2 && mouseY < centerY+heightRec/2 && mousePressed == true){
-       return 3;
-       }
+      drawRect(centerX,centerY,widthRec,heightRec,white,177,white);
+      drawText("押したら始まります",30,centerX,centerY,0,255);
+      if(mouseX > centerX-widthRec/2 && mouseX < centerX+widthRec/2 && mouseY > centerY-heightRec/2 && mouseY < centerY+heightRec/2 && mousePressed == true){
+         return 3;
+         }
+    }
   }
   return 2;
-  }
+}
   
   
 int countdown(){
@@ -339,9 +381,9 @@ class fire_ball {
     
     pos.x += sin(PI*time/160)*(250-pos.y)/100;
     
-    //if(sq(pos.x - 500)/900 + sq(pos.y - 160)/8100 > 1){
-      //size = 0.00001;
-    //}
+    if(abs(pos.x - 500) > 50){
+      size = 0.00001;
+    }
   }
   
   
@@ -364,9 +406,9 @@ class fire_ball {
     
     pos.x += sin(PI*time/80)*(250-pos.y)/100;
     
-    //if(sq(pos.x - 500)/900 + sq(pos.y - 160)/8100 > 1){
-      //size = 0.00001;
-    //}
+    if(abs(pos.x - 500) > 50){
+      size = 0.00001;
+    }
   }
   
   
